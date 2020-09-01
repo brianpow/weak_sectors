@@ -591,6 +591,23 @@ int main(int argc, char* argv[])
 				pattern_list[8]=0x1212;
 				pattern_list[9]=0x14B9;
 			}
+			if (!strncmp(&(argv[i-1][6]),"sd290+",6))
+			{
+				printf("create SD2.90+ patterns\n");
+				pattern_list[0]=12;
+				pattern_list[1]=0x5859;
+				pattern_list[2]=0x5A5F;
+				pattern_list[3]=0x7D65;
+				pattern_list[4]=0x082A;
+				pattern_list[5]=0x3916;
+				pattern_list[6]=0x3F65;
+				pattern_list[7]=0x2D9E;
+				pattern_list[8]=0x1212;
+				pattern_list[9]=0x14B9;
+				pattern_list[10]=0x15FA;
+				pattern_list[11]=0x9B6D;
+				pattern_list[12]=0x3045;
+			}
 		}
 		if (!strncmp(argv[i-1],"-out=",5))
 		{
