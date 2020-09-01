@@ -1,14 +1,18 @@
 // weak_sectors.cpp : Definiert den Einsprungpunkt für die Konsolenanwendung.
 //
-
+#include <cstdint>
+#ifdef _MSC_VER
 #include "stdafx.h"
-#include "stdio.h"
-#include "string.h"
-#include "stdlib.h"
+#endif
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include "memory.h"
 #include "encoder_tables"
 #include "ecc.h"
+#ifdef _MSC_VER
 #include "windows.h"
+#endif
 
 int scramble_L2(unsigned char *inout)
 {
@@ -493,7 +497,7 @@ int main(int argc, char* argv[])
 	union
 	{
 		char	sector[2448];
-		unsigned _int16	sector_i[1224];
+		uint16_t	sector_i[1224];
 	};
 	int		pattern_list[100];
 	int		iUseList=0;
@@ -599,7 +603,7 @@ int main(int argc, char* argv[])
 			{
 				lpfIn=stdin;
 				lpSource=(char*)malloc(256);
-				gets(lpSource);
+				fgets(lpSource,sizeof(lpSource),stdin);
 				printf("source file:");
 				printf(lpSource);
 				printf("\n\n");
@@ -774,7 +778,8 @@ int main(int argc, char* argv[])
 // plain CPU:
 				k=(int)&(iOccurences[0]);
 
-				_asm
+				#ifdef _MSC_VER
+				asm
 				{
 					pushad
 					mov  esi, k
@@ -795,7 +800,30 @@ int main(int argc, char* argv[])
 					mov  k, eax
 					popad
 				}
-				
+				#else
+				asm
+				(
+					"pushad;"
+					"mov  esi, %0;"
+					"mov  eax, 0;"
+					"mov  ecx, 65536;"
+					"mov  edx, [esi+4*eax];"
+				"_vgl:"	
+					"dec  ecx;"
+					"js   _ende;"
+					"mov  ebx, [esi+4*ecx];"
+					
+					"cmp  ebx, edx;"
+					"jbe  _vgl;"
+					"mov  eax, ecx;"
+					"mov  edx, [esi+4*eax];"
+					"jmp  _vgl;"
+				"_ende:"
+					"mov  %0, eax;"
+					"popad" : "=a" (k)
+				);
+				#endif
+
 				if (iOccurences[k]>30)
 				{
 					if (weak_patterns[k].dwForce_9+weak_patterns[k].dwForce_10>=3)
@@ -823,7 +851,7 @@ int main(int argc, char* argv[])
 			dwForce_9=0;dwForce_10=0;
 			for (i=0;i<2046;i++)
 			{
-				j=(BYTE)sector[i]+256*(BYTE)sector[i+1];
+				j=(uint8_t)sector[i]+256*(uint8_t)sector[i+1];
 				wpd=(weak_patterns[j]);
 				dwForce_9+=(wpd.dwForce_9_mask&1);
 				dwForce_10+=(wpd.dwForce_10_mask&1);
